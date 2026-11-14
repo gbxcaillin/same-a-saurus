@@ -59,8 +59,10 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 #title .top{width:100%;display:flex;justify-content:space-between;align-items:flex-start}
 #title .logo{width:min(92%,calc(120*var(--u)));max-height:32%;object-fit:contain;animation:logo 2.6s ease-in-out infinite;filter:drop-shadow(0 calc(1*var(--u)) calc(1.2*var(--u)) #1b2a4a40)}
 @keyframes logo{0%,100%{transform:rotate(-2deg) scale(1)}50%{transform:rotate(2deg) scale(1.04)}}
-#title .parade{display:flex;align-items:flex-end;justify-content:center;gap:0;width:100%;flex:1;min-height:0;max-height:46%}
+#title .gap{flex:1;min-height:0}
+#title .parade{display:flex;align-items:flex-end;justify-content:center;gap:0;width:100%;flex:none;height:min(34%,36vw);min-height:0;margin-bottom:calc(-1*var(--u))}
 #title .parade .slot{height:100%;aspect-ratio:1;max-width:36%;position:relative;margin:0 -1%}
+#title .parade .slot::before{content:"";position:absolute;left:14%;right:14%;bottom:9%;height:9%;border-radius:50%;background:radial-gradient(closest-side,#1b2a4a55,#1b2a4a22 60%,#1b2a4a00)}
 #title .mid{display:flex;flex-direction:column;align-items:center;gap:calc(2.5*var(--u))}
 #title .stars{font-weight:900;font-size:calc(4.2*var(--u));background:#ffffffdd;border-radius:999px;padding:calc(1*var(--u)) calc(3*var(--u));display:flex;align-items:center;gap:calc(1.2*var(--u))}
 #title .stars svg{width:calc(5*var(--u));height:calc(5*var(--u))}
@@ -71,6 +73,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .land #title .mid{order:2;width:44%}
 .land #title .parade{order:3;max-height:none;flex:none;height:42%;width:100%}
 .land #title .bottom{display:none}
+.land #title .gap{display:none}
 
 /* ---------- game ---------- */
 #game{flex-direction:column;gap:calc(1.6*var(--u))}
@@ -235,6 +238,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
       <button class="round" id="btnSoundT" aria-label="Sound"></button>
     </div>
     <img class="logo" id="logo" alt="Same-o-saurus">
+    <div class="gap"></div>
     <div class="parade" id="parade"></div>
     <div class="mid">
       <button class="big pulse" id="btnPlay"><svg viewBox="0 0 24 24"><path fill="#fff" d="M7 4.5v15a1.5 1.5 0 0 0 2.3 1.3l12-7.5a1.5 1.5 0 0 0 0-2.6l-12-7.5A1.5 1.5 0 0 0 7 4.5Z"/></svg><span id="playLbl">Play</span></button>
