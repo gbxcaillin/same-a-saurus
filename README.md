@@ -11,8 +11,8 @@ with all art, animation, video, music and sound built in. No server or internet 
 ## How it plays
 
 - An opening video plays when the game loads: a lonely T-Rex finds its matching twin and the matching
-  pairs pile in for a dance. The logo appears over the ending, then the camera dives into the leaves
-  and pulls back out onto the title page. It can be skipped, and the camera button on the title page
+  pairs pile in for a dance. The logo appears over the ending, then the camera tilts up into the sky
+  and comes back down onto the title page. It can be skipped, and the camera button on the title page
   replays it. The video starts silent (browsers require a tap before sound); the first tap starts the music.
 
 - No timer and no way to fail. A wrong tap gets a gentle wobble; after two wrong taps, or 9 seconds

@@ -24,14 +24,23 @@ img{-webkit-user-drag:none;user-drag:none;pointer-events:none;display:block}
 button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
 #app{position:fixed;inset:0;overflow:hidden;background:var(--sky)}
 #bgd{position:absolute;inset:0;background:var(--sky) center/cover no-repeat;z-index:0}
-#leafcover{position:absolute;inset:0;z-index:42;pointer-events:none;opacity:0;background:radial-gradient(circle at 30% 80%,#5fbf4a,#2f8a35 55%,#1f6b2b)}
-/* intro -> title: dive into the leaves, then pull back out onto the title page */
-#intro.dive{transform-origin:28% 97%;transform:scale(9);transition:transform .65s cubic-bezier(.6,0,.9,.4)}
-.pullback #bgd,.pullback #title{transform-origin:16% 97%;animation:pullback .95s cubic-bezier(.15,.7,.3,1) both}
-@keyframes pullback{from{transform:scale(7)}to{transform:scale(1)}}
-.pullback #title{pointer-events:none}   /* no stray taps while the page is still zooming */
-#leafcover.on{animation:leaf 1.1s ease-in-out both}
-@keyframes leaf{0%{opacity:0}45%,58%{opacity:1}100%{opacity:0}}
+/* intro -> title: the camera tilts up into the sky, then comes back down onto the title page */
+#skypan{position:absolute;inset:0;z-index:41;pointer-events:none;display:none;overflow:hidden;background:linear-gradient(#5db8ee,#8fd0f3 45%,#bfe4f7)}
+#skypan i{position:absolute;display:block;width:46%;aspect-ratio:2.1;filter:drop-shadow(0 5px 0 #d6ecfa);
+  background:radial-gradient(closest-side,#fff 96%,#fff0) 0% 100%/44% 60% no-repeat, radial-gradient(closest-side,#fff 96%,#fff0) 36% 0%/50% 96% no-repeat,
+    radial-gradient(closest-side,#fff 96%,#fff0) 100% 100%/46% 68% no-repeat, linear-gradient(#fff,#fff) 50% 100%/62% 38% no-repeat}
+#skypan i:nth-child(1){left:-8%;top:18%}  #skypan i:nth-child(2){left:52%;top:34%;width:38%}
+#skypan i:nth-child(3){left:20%;top:58%;width:52%}  #skypan i:nth-child(4){left:66%;top:74%;width:30%}  #skypan i:nth-child(5){left:-12%;top:84%;width:34%}
+.panup #skypan,.pandown #skypan{display:block}
+.panup #intro{animation:panOutDown .85s cubic-bezier(.55,0,.45,1) both}
+.panup #skypan{animation:panInDown .85s cubic-bezier(.55,0,.45,1) both}
+.pandown #skypan{animation:panOutUp .95s cubic-bezier(.45,0,.2,1) both}
+.pandown #bgd,.pandown #title{animation:panInUp .95s cubic-bezier(.45,0,.2,1) both}
+.pandown #title{pointer-events:none}   /* no stray taps while the page is still moving */
+@keyframes panOutDown{to{transform:translateY(100%)}}
+@keyframes panInDown{from{transform:translateY(-100%)}to{transform:none}}
+@keyframes panOutUp{to{transform:translateY(-100%)}}
+@keyframes panInUp{from{transform:translateY(100%)}to{transform:none}}
 #app::after{content:"";position:absolute;inset:0;background:linear-gradient(#ffffff55,#ffffff22 40%,#ffffff00);pointer-events:none}
 .screen{position:absolute;inset:0;display:none;z-index:1;
   padding:calc(env(safe-area-inset-top,0px) + 2*var(--u)) calc(env(safe-area-inset-right,0px) + 2.5*var(--u)) calc(env(safe-area-inset-bottom,0px) + 2*var(--u)) calc(env(safe-area-inset-left,0px) + 2.5*var(--u))}
@@ -241,7 +250,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 <body>
 <div id="app">
   <div id="bgd"></div>
-  <div id="leafcover"></div>
+  <div id="skypan"><i></i><i></i><i></i><i></i><i></i></div>
   <canvas id="fx"></canvas>
 
   <section id="loading" class="screen on"><div class="egg"></div><p>Hatching…</p></section>
@@ -966,17 +975,17 @@ function playIntro(){
 }
 function endIntro(skip){
   if (!introOn) return; introOn = false; clearTimeout(introTimer);
-  const v = $('#introVid'), intro = $('#intro'), app = $('#app'), cover = $('#leafcover');
+  const v = $('#introVid'), app = $('#app');
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (skip === true || reduce){ try { v.pause(); } catch(e){} showTitle(); show('intro', false); return; }
-  // 1) zoom into the foliage at the bottom of the video  2) cut under a wash of green  3) zoom out of the title's foliage
-  intro.classList.add('dive'); cover.classList.remove('on'); void cover.offsetWidth; cover.classList.add('on'); Snd.fx('whoosh');
+  // 1) tilt up: the video slides away downwards as sky comes in from above
+  // 2) tilt back down: the sky slides away upwards and the title page rises into view
+  app.classList.add('panup'); Snd.fx('whoosh');
   setTimeout(() => {
     try { v.pause(); } catch(e){}
-    showTitle(); show('intro', false); intro.classList.remove('dive');
-    app.classList.add('pullback'); placeParade();
-    setTimeout(() => { app.classList.remove('pullback'); cover.classList.remove('on'); placeParade(); }, 1000);
-  }, 560);
+    showTitle(); show('intro', false); app.classList.remove('panup'); app.classList.add('pandown'); placeParade(); Snd.fx('whoosh');
+    setTimeout(() => { app.classList.remove('pandown'); placeParade(); }, 980);
+  }, 860);
 }
 /* ---------------- store: ads + purchase ---------------- */
 function confirmBox(title, text, yes='OK', no='Cancel'){
