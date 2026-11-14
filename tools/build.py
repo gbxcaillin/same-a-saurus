@@ -3,7 +3,7 @@ Usage: python3 tools/build.py"""
 import base64, json, os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MIME = {'.webp': 'image/webp', '.png': 'image/png', '.mp4': 'video/mp4', '.jpg': 'image/jpeg'}
+MIME = {'.webp': 'image/webp', '.png': 'image/png', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.mp3': 'audio/mpeg'}
 SKIP = {'icon-512.png', 'icon-180.png'}
 
 

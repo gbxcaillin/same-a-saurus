@@ -86,7 +86,11 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   font-weight:900;font-size:calc(5.6*var(--u));display:grid;place-items:center;border:calc(.6*var(--u)) solid #fff;z-index:3}
 #btext{flex:1;min-width:0;display:flex;flex-direction:column;gap:calc(1*var(--u))}
 #sentence{font-weight:800;font-size:calc(4.3*var(--u));line-height:1.18}
-#sentence b{font-weight:900;color:#fff;background:var(--grape);border-radius:calc(1.6*var(--u));padding:0 calc(1.4*var(--u));white-space:nowrap;display:inline-block}
+#sentence b{font-weight:900;font-size:1.55em;line-height:1.15;color:#fff;background:var(--kw,var(--grape));border-radius:.42em;padding:.04em .4em .08em;white-space:nowrap;display:inline-block;
+  margin:.18em .1em .1em;box-shadow:0 .14em 0 #1b2a4a40, 0 0 0 .1em #fff, 0 0 0 .18em var(--kw2,#1b2a4a22);text-shadow:0 .06em 0 #1b2a4a55;letter-spacing:.01em;
+  transform-origin:50% 60%;animation:kw 1.5s ease-in-out infinite;vertical-align:middle}
+#sentence b.long{font-size:1.28em}
+@keyframes kw{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(2.5deg) scale(1.09)}}
 #hint{font-weight:900;font-size:calc(4.6*var(--u));color:var(--coral);line-height:1.1}
 #pips{display:flex;gap:calc(1*var(--u));flex-wrap:wrap;margin-top:calc(.4*var(--u))}
 .pip{width:calc(5.4*var(--u));height:calc(5.4*var(--u))}
@@ -310,7 +314,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         <div class="row"><span>Music</span><div class="seg" data-k="music"><button data-v="1">On</button><button data-v="0">Off</button></div></div>
         <div class="row"><span>Sound effects</span><div class="seg" data-k="sfx"><button data-v="1">On</button><button data-v="0">Off</button></div></div>
         <div class="row"><span>Voice (reads the question)</span><div class="seg" data-k="voice"><button data-v="1">On</button><button data-v="0">Off</button></div></div>
-        <div class="row"><span>Spelling</span><div class="seg" data-k="spell"><button data-v="uk">colour</button><button data-v="us">color</button></div></div>
+        <div class="row"><span>Spelling and accent</span><div class="seg" data-k="spell"><button data-v="uk">colour</button><button data-v="us">color</button></div></div>
         <button class="btn warn" id="btnReset">Reset progress</button>
       </div>
       <small>Same-a-saurus v1.0 · Art, animation and video made with OpenArt</small>
@@ -370,10 +374,11 @@ const CO = Object.keys(COLORS);
 const SIZES = {S:{k:.56,name:'small'}, M:{k:.78,name:'medium'}, L:{k:1,name:'big'}};
 const GLASSES = {star:{f:'acc/sg_star.webp',r:108/320,name:'star'}, heart:{f:'acc/sg_heart.webp',r:132/320,name:'heart'},
                  round:{f:'acc/sg_round.webp',r:136/320,name:'round'}, square:{f:'acc/sg_square.webp',r:114/320,name:'square'}};
-const HAIR = {mohawk:{f:'acc/hair_mohawk.webp',r:308/320,name:'rainbow mohawk',sink:.2,k:.8},
-              afro:{f:'acc/hair_afro.webp',r:248/320,name:'curly orange hair',sink:.22,k:1},
-              pigtails:{f:'acc/hair_pigtails.webp',r:147/320,name:'pigtails',sink:.3,k:1.5},
-              quiff:{f:'acc/hair_quiff.webp',r:237/320,name:'purple quiff',sink:.22,k:1}};
+// clash: body colours that would hide the wig
+const HAIR = {mohawk:{f:'acc/hair_mohawk.webp',name:'rainbow mohawk',clash:[]},
+              afro:{f:'acc/hair_afro.webp',name:'curly orange hair',clash:['orange','red']},
+              pigtails:{f:'acc/hair_pigtails.webp',name:'pigtails',clash:['yellow','orange']},
+              quiff:{f:'acc/hair_quiff.webp',name:'purple quiff',clash:['purple','blue']}};
 const CHEERS = ['ROAR-SOME!','DINO-MITE!','T-RIFIC!','STOMP-TASTIC!','YOU DID IT!','SUPER STAR!','RAWR-MAZING!'];
 const CHEER_COL = ['#ff5d5d','#ff9f1c','#ffc93c','#34c759','#3fa9f5','#8b5cf6'];
 
@@ -440,16 +445,11 @@ function makeDino(d, o={}){
   const sp = SPECIES[d.sp], el = document.createElement('div');
   el.className = 'dino' + (o.sil ? ' sil' : '');
   const img = document.createElement('img'); img.className = 'body'; img.alt = ''; img.draggable = false;
-  img.src = tint('sprites/'+d.sp+'.webp', d.co); el.appendChild(img);
+  const hk = d.hair && ASSETS['hair/'+d.sp+'_'+d.hair+'.webp'] ? 'hair/'+d.sp+'_'+d.hair+'.webp' : 'sprites/'+d.sp+'.webp';
+  img.src = tint(hk, d.co); el.appendChild(img);
   const dn = document.createElement('div'); dn.className = 'dance'; el.appendChild(dn);
   el._d = d;
   const pc = v => (v/1024*100) + '%';
-  if (d.hair && HAIR[d.hair]){
-    const h = HAIR[d.hair], w = sp.hairW*h.k*1.35, hh = w*h.r, a = document.createElement('img');
-    a.className = 'acc'; a.alt = ''; a.src = ASSETS[h.f];
-    a.style.cssText = `width:${pc(w)};left:${pc(sp.top[0]-w/2)};top:${pc(sp.top[1]-hh*(1-h.sink))};transform:rotate(-6deg)`;
-    el.appendChild(a);
-  }
   if (d.glasses && GLASSES[d.glasses]){
     const g = GLASSES[d.glasses], e = sp.eyes; let cx, cy, w, rot = 0;
     if (e.length === 2){ const dx = e[1][0]-e[0][0], dy = e[1][1]-e[0][1], dist = Math.hypot(dx,dy);
@@ -527,7 +527,31 @@ const Snd = (() => {
     }
   }
   function setMusicGain(){ if (ac) musicG.gain.setTargetAtTime(save.music && playing ? .5*duck : 0, ac.currentTime, .15); }
+  const clips = {}; let vSrc = null, vTok = 0;
+  function clipBuf(key){
+    if (clips[key]) return clips[key];
+    const uri = ASSETS[key]; if (!uri || !ac) return null;
+    return (clips[key] = new Promise(res => { try {
+      const bin = atob(uri.split(',')[1]), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      const pr = ac.decodeAudioData(u8.buffer, b => res(b), () => res(null)); if (pr && pr.catch) pr.catch(() => res(null));
+    } catch(e){ res(null); } }));
+  }
   const api = {
+    hasClip(key){ return !!ASSETS[key]; },
+    preload(keys){ if (init()) keys.forEach(k => clipBuf(k)); },
+    speaking(){ return !!vSrc; },
+    stopClips(){ vTok++; if (vSrc){ try { vSrc.onended = null; vSrc.stop(); } catch(e){} vSrc = null; } },
+    async playClips(keys, done){
+      api.stopClips(); const tok = ++vTok;
+      if (!init() || ac.state !== 'running'){ done && done(false); return; }
+      for (const key of keys){
+        const b = await clipBuf(key); if (tok !== vTok) return; if (!b) continue;
+        await new Promise(res => { const s = ac.createBufferSource(), g = ac.createGain(); g.gain.value = 1.25; s.buffer = b; s.connect(g); g.connect(master);
+          s.onended = () => { if (vSrc === s) vSrc = null; res(); }; vSrc = s; s.start(); });
+        if (tok !== vTok) return;
+      }
+      done && done(true);
+    },
     unlock(){ if (!init()) return; if (ac.state !== 'running') ac.resume().catch(()=>{}); },
     music(on){
       if (!init()) return;
@@ -565,22 +589,34 @@ const Snd = (() => {
 })();
 
 /* ---------------- voice ---------------- */
+// Recorded clips (assets/voice/<us|uk>/*.mp3) are used when present; otherwise the device's own speech engine.
 const Voice = {
-  say(text){
-    if (!save.voice) return;
+  dir(){ return 'voice/' + (spell() === 'us' ? 'us' : 'uk') + '/'; },
+  // keys: clip names; text: what to say if the clips are missing
+  say(keys, text, force){
+    if (!save.voice && !force) return;
+    const ks = keys.map(k => this.dir() + k + '.mp3');
+    if (ks.every(k => Snd.hasClip(k))){ this.stopTTS(); Snd.duck(.35); Snd.playClips(ks, () => Snd.duck(1)); return; }
+    this.tts(text);
+  },
+  // short reaction that never talks over the question
+  react(key){ if (!save.voice || Snd.speaking()) return; const k = this.dir() + key + '.mp3'; if (Snd.hasClip(k)) Snd.playClips([k]); },
+  tts(text){
     const B = window.SameASaurusBridge;
     if (B && typeof B.speak === 'function'){ try { B.speak(text, speechLang()); } catch(e){} return; }
     const ss = window.speechSynthesis; if (!ss || !window.SpeechSynthesisUtterance) return;
     try {
       ss.cancel();
-      const u = new SpeechSynthesisUtterance(text), lang = speechLang(); u.lang = lang; u.rate = .92; u.pitch = 1.25; u.volume = 1;
-      const vs = ss.getVoices() || [], v = vs.find(x => x.lang && x.lang.replace('_','-') === lang) || vs.find(x => x.lang && x.lang.slice(0,2) === 'en');
+      const u = new SpeechSynthesisUtterance(text), lang = speechLang(); u.lang = lang; u.rate = .92; u.pitch = 1.2; u.volume = 1;
+      const vs = (ss.getVoices() || []).filter(x => x.lang && x.lang.slice(0,2) === 'en'), fem = /female|samantha|karen|moira|tessa|fiona|serena|victoria|allison|ava|susan|zira|hazel|libby|sonia|natasha|aria|jenny|catherine/i;
+      const same = vs.filter(x => x.lang.replace('_','-') === lang), v = same.find(x => fem.test(x.name)) || vs.find(x => fem.test(x.name)) || same[0] || vs[0];
       if (v) u.voice = v;
       u.onstart = () => Snd.duck(.35); u.onend = u.onerror = () => Snd.duck(1);
       ss.speak(u); setTimeout(() => Snd.duck(1), 9000);
     } catch(e){}
   },
-  stop(){ try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch(e){} Snd.duck(1); }
+  stopTTS(){ try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch(e){} },
+  stop(){ this.stopTTS(); Snd.stopClips(); Snd.duck(1); }
 };
 
 /* ---------------- confetti ---------------- */
@@ -680,26 +716,26 @@ function genRound(level){
     const c = pick(CO), sps = vary ? spreadPick(SP, n) : Array(n).fill(baseSp), oc = spreadPick(others(CO, c), n-k);
     for (let i = 0; i < k; i++) M.push(mk({sp:sps[i], co:c}));
     for (let i = 0; i < n-k; i++) D.push(mk({sp:sps[k+i], co:oc[i]}));
-    R.example = mk({sp: vary ? pick(SP) : baseSp, co:c}); R.hint = `Find the ${COLORS[c].name} ones!`;
+    R.example = mk({sp: vary ? pick(SP) : baseSp, co:c}); R.hint = `Find the ${COLORS[c].name} ones!`; R.hk = 'h_co_' + c;
   } else if (attr === 'species' || attr === 'shape'){
     const s = pick(SP), pool = SP.filter(x => x !== s && !SPECIES[s].like.includes(x)), os = spreadPick(pool, n-k);
     const cs = (vary && attr === 'species') ? spreadPick(CO, n) : Array(n).fill(baseCo);
     for (let i = 0; i < k; i++) M.push(mk({sp:s, co:cs[i]}));
     for (let i = 0; i < n-k; i++) D.push(mk({sp:os[i], co:cs[k+i]}));
     R.example = mk({sp:s, co: attr === 'species' && vary ? pick(CO) : baseCo});
-    R.hint = attr === 'shape' ? 'Find this shape!' : `Find every ${SPECIES[s].name}!`;
+    R.hint = attr === 'shape' ? 'Find this shape!' : `Find every ${SPECIES[s].name}!`; R.hk = attr === 'shape' ? 'h_shape' : 'h_sp_' + s;
   } else if (attr === 'size'){
     const set = level < 9 ? ['S','L'] : ['S','M','L'], z = pick(set), oz = spreadPick(others(set, z), n-k);
     const cs = vary ? spreadPick(CO, n) : Array(n).fill(baseCo);
     for (let i = 0; i < k; i++) M.push(mk({sz:z, co:cs[i]}));
     for (let i = 0; i < n-k; i++) D.push(mk({sz:oz[i], co:cs[k+i]}));
-    R.example = mk({sz:z}); R.hint = `Find the ${SIZES[z].name} ones!`;
+    R.example = mk({sz:z}); R.hint = `Find the ${SIZES[z].name} ones!`; R.hk = 'h_sz_' + z;
   } else if (attr === 'legs'){
     const v = pick([2,4]), a = SP.filter(x => SPECIES[x].legs === v), b = SP.filter(x => SPECIES[x].legs !== v);
     const ms = spreadPick(a, k), ds = spreadPick(b, n-k), cs = vary ? spreadPick(CO, n) : Array(n).fill(baseCo);
     for (let i = 0; i < k; i++) M.push(mk({sp:ms[i], co:cs[i]}));
     for (let i = 0; i < n-k; i++) D.push(mk({sp:ds[i], co:cs[k+i]}));
-    R.example = mk({sp:pick(a)}); R.number = v; R.hint = `Find the ones with ${v} legs!`;
+    R.example = mk({sp:pick(a)}); R.number = v; R.hint = `Find the ones with ${v} legs!`; R.hk = 'h_legs_' + v;
   } else if (attr === 'horns'){
     const ok = SP.filter(x => SPECIES[x].horns !== null), v = pick([0,1,2,3]);
     const a = ok.filter(x => SPECIES[x].horns === v), b = ok.filter(x => SPECIES[x].horns !== v);
@@ -707,15 +743,17 @@ function genRound(level){
     for (let i = 0; i < k; i++) M.push(mk({sp:ms[i], co:cs[i]}));
     for (let i = 0; i < n-k; i++) D.push(mk({sp:ds[i], co:cs[k+i]}));
     R.example = mk({sp:pick(a)}); R.number = v;
-    R.hint = v === 0 ? 'Find the ones with no horns!' : v === 1 ? 'Find the ones with 1 horn!' : `Find the ones with ${v} horns!`;
+    R.hint = v === 0 ? 'Find the ones with no horns!' : v === 1 ? 'Find the ones with 1 horn!' : `Find the ones with ${v} horns!`; R.hk = 'h_horns_' + v;
   } else {
     const key = attr, table = attr === 'hair' ? HAIR : GLASSES, all = Object.keys(table), v = pick(all);
     let ov = others(all, v); if (level > 8) ov = ov.concat([null]);
-    const od = spreadPick(ov, n-k), sps = spreadPick(SP, n), cs = spreadPick(CO, n);
-    for (let i = 0; i < k; i++) M.push(mk({sp:sps[i], co:cs[i], [key]:v}));
-    for (let i = 0; i < n-k; i++) D.push(mk({sp:sps[k+i], co:cs[k+i], [key]:od[i]}));
-    R.example = mk({sp:pick(SP), co:pick(CO), [key]:v});
+    const od = spreadPick(ov, n-k), sps = spreadPick(SP, n);
+    const coFor = h => pick(attr === 'hair' && h ? CO.filter(c => !HAIR[h].clash.includes(c)) : CO);
+    for (let i = 0; i < k; i++) M.push(mk({sp:sps[i], co:coFor(v), [key]:v}));
+    for (let i = 0; i < n-k; i++) D.push(mk({sp:sps[k+i], co:coFor(od[i]), [key]:od[i]}));
+    R.example = mk({sp:pick(SP), co:coFor(v), [key]:v});
     R.hint = attr === 'hair' ? `Find the ${table[v].name}!` : `Find the ${table[v].name} sunglasses!`;
+    R.hk = (attr === 'hair' ? 'h_hair_' : 'h_gl_') + v;
   }
   M.forEach(d => d.match = true); D.forEach(d => d.match = false);
   R.items = shuffle(M.concat(D));
@@ -743,9 +781,9 @@ function giveHint(){
   const t = pick(c); t.el.classList.remove('hintme'); void t.el.offsetWidth; t.el.classList.add('hintme');
   setTimeout(() => t.el.classList.remove('hintme'), 2800); resetIdle();
 }
-function speakPrompt(){
+function speakPrompt(force){
   const R = G.round; if (!R) return; const [a, b] = sentenceParts(R.attr);
-  Voice.say(`Match all the dinosaurs ${a} ${b}. ${R.hint}`);
+  Voice.say(['q_' + R.attr, R.hk], `Match all the dinosaurs ${a} ${b}. ${R.hint}`, force);
 }
 async function startRound(){
   const token = ++G.token; G.busy = true; clearTimeout(G.idle); Voice.stop();
@@ -754,7 +792,9 @@ async function startRound(){
   $('#game').classList.toggle('bonus', R.bonus);
   $('#levelTag').textContent = 'Level ' + R.level;
   const [a, b] = sentenceParts(R.attr);
-  $('#sentence').innerHTML = `Match all the dinosaurs ${a} <b>${b}</b>`;
+  const KW = {colour:['linear-gradient(90deg,#ff5d5d,#ff9f1c,#e6b800,#34c759,#3fa9f5,#8b5cf6)','#8b5cf6'], species:['#16a34a','#16a34a'], shape:['#1b2a4a','#1b2a4a'], size:['#ff7a00','#ff7a00'],
+    legs:['#0ea5e9','#0ea5e9'], horns:['#e11d48','#e11d48'], hair:['linear-gradient(90deg,#ff5d5d,#ff9f1c,#8b5cf6)','#ff5d5d'], glasses:['linear-gradient(90deg,#0ea5e9,#8b5cf6,#ff4fa3)','#8b5cf6']}[R.attr];
+  $('#sentence').innerHTML = `Match all the dinosaurs ${a} <b class="${b.length > 8 ? 'long' : ''}" style="--kw:${KW[0]};--kw2:${KW[1]}">${b}</b>`;
   $('#hint').textContent = R.hint;
   $('#pips').innerHTML = Array(R.k).fill('<svg class="pip" viewBox="0 0 24 24"><path d="m12 2 3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8l-6.3 3.6 1.5-7.1L1.8 9.4 9 8.6Z"/></svg>').join('');
   const ex = $('#exHolder'); ex.innerHTML = '';
@@ -778,7 +818,8 @@ async function startRound(){
     $('#splashP').textContent = R.attr === 'hair' ? 'Silly hairstyles!' : 'Super sunglasses!';
     $('#splashImg').src = ASSETS[(R.attr === 'hair' ? HAIR : GLASSES)[R.example[R.attr]].f];
     show('splash', true); Snd.fx('bonus'); FX.burst(innerWidth/2, innerHeight/2, 50);
-    await wait(1700); if (token !== G.token) return; show('splash', false);
+    Voice.say(['b_' + R.attr], R.attr === 'hair' ? 'Bonus round! Silly hairstyles!' : 'Bonus round! Super sunglasses!');
+    await wait(2600); if (token !== G.token) return; show('splash', false);
   }
   Snd.fx('whoosh'); await wait(350 + R.n*60); if (token !== G.token) return;
   G.busy = false; speakPrompt(); resetIdle();
@@ -799,11 +840,12 @@ function tapCell(cell, ev){
     cell.el.classList.remove('hintme','nope'); cell.el.classList.add('found','jump'); cell.wrap.classList.remove('float');
     cell.dino.classList.remove('sil');
     Snd.fx('yes', G.found-1); sparkle(cell);
+    if (G.found < G.round.k && (G.found === 1 || Math.random() < .35)) Voice.react('yes_' + rnd(4));
     const p = $$('#pips .pip')[G.found-1]; if (p) p.classList.add('on');
     setTimeout(() => { cell.el.classList.remove('jump'); if (!startDance(cell.dino)) cell.wrap.classList.add('bop'); }, 480);
     if (G.found >= G.round.k) finishRound();
   } else {
-    G.wrong++; G.streakWrong++; Snd.fx('no');
+    G.wrong++; G.streakWrong++; Snd.fx('no'); Voice.react('no_' + rnd(3));
     cell.el.classList.remove('nope'); void cell.el.offsetWidth; cell.el.classList.add('nope');
     setTimeout(() => cell.el.classList.remove('nope'), 480);
     if (G.streakWrong >= 2){ G.streakWrong = 0; setTimeout(giveHint, 500); }
@@ -820,7 +862,7 @@ async function finishRound(){
 /* ---------------- celebration ---------------- */
 let partyN = 0, vidUrls = [];
 function party(stars, R){
-  const token = G.token, word = pick(CHEERS);
+  const token = G.token, wi = rnd(CHEERS.length), word = CHEERS[wi];
   $('#cheer').innerHTML = [...word].map((ch, i) => `<span style="color:${CHEER_COL[i % CHEER_COL.length]};animation-delay:${i*55}ms,${i*90}ms">${ch}</span>`).join('');
   const uPx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--u')) || 4;
   $('#cheer').style.fontSize = Math.min(12.5*uPx, innerWidth*.9/(word.length*.7)) + 'px';
@@ -844,7 +886,7 @@ function party(stars, R){
   } else v.style.display = 'none';
   Snd.duck(.45); Snd.fx('fanfare'); FX.cannons(); FX.rain(4500);
   setTimeout(() => { if (token === G.token) FX.burst(innerWidth*.5, innerHeight*.3, 70); }, 500);
-  setTimeout(() => { if (token === G.token) Voice.say(word.replace(/-/g,' ').toLowerCase().replace('rawr','roar') + ' You found them all!'); }, 1500);
+  setTimeout(() => { if (token === G.token) Voice.say(['c_' + wi], word.replace(/-/g,' ').toLowerCase().replace('rawr','roar') + ' You found them all!'); }, 1500);
   [...ps.children].forEach((sv, i) => setTimeout(() => {
     if (token !== G.token) return; if (i < stars) sv.classList.add('gold'); sv.classList.add('in');
     if (i < stars){ Snd.fx('star', i); const r = sv.getBoundingClientRect(); FX.burst(r.left + r.width/2, r.top + r.height/2, 26); }
@@ -954,17 +996,17 @@ async function boot(){
   layout();
   $('#app').style.backgroundImage = `url(${ASSETS['bg.webp']})`;
   $('#logo').src = ASSETS['logo.webp'];
-  const keys = SP.map(s => 'sprites/'+s+'.webp').concat(SP.filter(hasDance).map(s => 'dance/'+s+'.webp'));
+  const keys = SP.map(s => 'sprites/'+s+'.webp').concat(SP.filter(hasDance).map(s => 'dance/'+s+'.webp'), Object.keys(ASSETS).filter(k => k.startsWith('hair/')));
   await Promise.all(keys.map(k => loadImage(ASSETS[k]).then(i => { baseImg[k] = i; }).catch(() => {})));
   ['party.mp4','party2.mp4'].forEach((k, i) => { try { if (ASSETS[k]) vidUrls[i] = b64Blob(ASSETS[k]); } catch(e){} });
   SP.forEach(s => CO.forEach(c => warm('sprites/'+s+'.webp', c)));
   soundIcon(); showTitle(); layout(); show('loading', false);
 }
-$('#btnPlay').addEventListener('click', () => { Snd.unlock(); Snd.music(true); Snd.fx('tap'); startRound(); });
+$('#btnPlay').addEventListener('click', () => { Snd.unlock(); Snd.music(true); Snd.fx('tap'); Snd.preload(Object.keys(ASSETS).filter(k => k.startsWith(Voice.dir()))); startRound(); });
 $('#btnHome').addEventListener('click', goHome); $('#btnPHome').addEventListener('click', goHome);
 $('#btnNext').addEventListener('click', nextRound);
 $('#btnSoundT').addEventListener('click', toggleSound); $('#btnSoundG').addEventListener('click', toggleSound);
-$('#say').addEventListener('click', () => { Snd.unlock(); Snd.fx('tap'); const was = save.voice; save.voice = 1; speakPrompt(); save.voice = was; resetIdle(); });
+$('#say').addEventListener('click', () => { Snd.unlock(); Snd.fx('tap'); speakPrompt(true); resetIdle(); });
 $('#example').addEventListener('pointerdown', () => { Snd.unlock(); Snd.fx('pop'); });
 $('#btnGrown').addEventListener('click', () => { Snd.unlock(); Snd.fx('tap'); openGate(openGrown); });
 $('#gateX').addEventListener('click', () => { gateThen = null; show('gate', false); });

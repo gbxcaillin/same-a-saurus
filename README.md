@@ -5,15 +5,17 @@ A dinosaur matching puzzle game for ages 3 to 5. A sentence at the top asks the 
 number of horns) and they tap every dinosaur that matches the example. Every fourth level is a
 silly bonus round: matching sunglasses or matching hairstyles.
 
-**Play it:** open `index.html` in any modern browser. It is one self-contained file (about 3 MB)
+**Play it:** open `index.html` in any modern browser. It is one self-contained file (about 6 MB)
 with all art, animation, video, music and sound built in. No server or internet needed.
 
 ## How it plays
 
 - No timer and no way to fail. A wrong tap gets a gentle wobble; after two wrong taps, or 9 seconds
   of waiting, one correct dinosaur wiggles as a hint.
-- The question is read aloud (tap the speaker to hear it again), with a plain-words hint under it
-  such as "Find the purple ones!".
+- The question is read aloud by a recorded friendly female voice (tap the speaker to hear it again),
+  with a plain-words hint under it such as "Find the purple ones!". The operative word (colour, size,
+  number of horns...) is enlarged, colour-coded and gently wiggles. The voice also cheers on correct
+  taps, encourages after a wrong one and announces bonus rounds and the celebration.
 - Tapped matches dance (sprite-sheet animation), and finishing a level triggers the celebration:
   party video, fanfare, confetti cannons, stars and a cheer. Tapping the party screen fires more confetti.
 - 1 to 3 stars per level (3 for no wrong taps). Progress and stars are saved on the device.
@@ -46,7 +48,14 @@ Things to know before store submission:
 
 - A game aimed at under-5s falls under Google Play's Families policy and Apple's Kids category
   rules: use a certified kids ad SDK, no personalised ads, and keep purchases behind the parent gate.
-- Android WebView has no built-in speech, so supply `speak` from the wrapper there or the voice is silent.
+
+## Voice
+
+56 recorded lines per accent, generated with Kokoro (open-source text-to-speech, Apache-2.0 licence):
+`af_heart` for US devices and `bf_emma` (British) everywhere else, following the same region rule as
+the spelling. The clips are built into the file, so the voice works offline and inside app wrappers.
+If a clip is ever missing the game falls back to the device's own speech engine and prefers a female voice.
+Lines live in `tools/voice_lines.json`; regenerate with `tools/make_voice.py`.
 
 ## Art
 
@@ -55,6 +64,7 @@ All art, sprite animation and video was generated with OpenArt:
 | Asset | Model |
 | --- | --- |
 | 8 dinosaur species, accessories, background, logo, icon, party scenes | Seedream 5.5 (transparent PNG) |
+| 32 wig sprites (every species redrawn wearing each of the 4 wigs, so the hair fits the head) | Seedream 5.5 image-to-image |
 | 8 dance loops (cut into sprite strips) | PixVerse V6 image-to-video on a magenta key colour |
 | 2 celebration clips | Kling 3 Omni image-to-video |
 
@@ -71,6 +81,7 @@ assets/               processed art, sprite strips, video
 tools/build.py        inlines assets/ into index.html
 tools/make_assets.py  raw OpenArt downloads -> assets/ (cut-outs, keying, sprite strips, video encode)
 tools/dance_frames.json  which video frames make each dance loop
+tools/make_voice.py   voice_lines.json -> assets/voice/<us|uk>/*.mp3
 tools/playtest.py     automated playthrough (Playwright): puzzle correctness over 4,800 generated
                       rounds, touch input, ads every 3 levels, purchase flow, save/reload, rotation
 ```
