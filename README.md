@@ -1,4 +1,4 @@
-# Same-a-saurus
+# Same-o-saurus
 
 A dinosaur matching puzzle game for ages 3 to 5. A sentence at the top asks the child to
 "Match all the dinosaurs that are the same colour" (or species, shape, size, number of legs,
@@ -34,14 +34,14 @@ with all art, animation, video, music and sound built in. No server or internet 
   TWA, WKWebView) plugs the real ones in by defining this object before the game loads:
 
 ```js
-window.SameASaurusBridge = {
+window.SameOSaurusBridge = {
   showInterstitial: () => Promise,        // show one short ad, resolve when it closes
   purchaseRemoveAds: () => Promise,       // resolve true when the $0.99 purchase succeeds
   restorePurchases: () => Promise,        // resolve true if already owned
   getPrice: () => Promise,                // localised price string, e.g. "$0.99"
   speak: (text, lang) => {}               // optional native text-to-speech
 };
-// the wrapper can also call window.SameASaurus.setAdFree(true) at start-up
+// the wrapper can also call window.SameOSaurus.setAdFree(true) at start-up
 ```
 
 Things to know before store submission:
@@ -64,7 +64,7 @@ All art, sprite animation and video was generated with OpenArt:
 | Asset | Model |
 | --- | --- |
 | 8 dinosaur species, accessories, background, logo, icon, party scenes | Seedream 5.5 (transparent PNG) |
-| 32 wig sprites (every species redrawn wearing each of the 4 wigs, so the hair fits the head) | Seedream 5.5 image-to-image |
+| 64 accessory sprites (every species redrawn wearing each of the 4 wigs and 4 sunglasses, so they fit the head) | Seedream 5.5 image-to-image |
 | 8 dance loops (cut into sprite strips) | PixVerse V6 image-to-video on a magenta key colour |
 | 2 celebration clips | Kling 3 Omni image-to-video |
 

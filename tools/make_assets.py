@@ -15,19 +15,19 @@ def statics():
         im = Image.open(f'{proc}/{n}.png').convert('RGBA').resize((512,512), Image.LANCZOS)
         save_webp(im, f'{out}/sprites/{n}.webp', 88)
 
-def hair():
-    """Dinosaurs redrawn wearing each wig: raw/wig/<species>_<wig>.png -> assets/hair/*.webp"""
-    os.makedirs(f'{out}/hair', exist_ok=True)
+def worn(src, dst, kinds):
+    """Dinosaurs redrawn wearing an accessory: raw/<src>/<species>_<kind>.png -> assets/<dst>/*.webp"""
+    os.makedirs(f'{out}/{dst}', exist_ok=True)
     for n in SPECIES:
-        for w in ['mohawk','afro','pigtails','quiff']:
-            p = f'{raw}/wig/{n}_{w}.png'
+        for w in kinds:
+            p = f'{raw}/{src}/{n}_{w}.png'
             if not os.path.exists(p): continue
             im = Image.open(p).convert('RGBA')
             a = im.split()[3].point(lambda v: 255 if v > 24 else 0)
             im = im.crop(a.getbbox()); S = 512; m = int(S*0.08); sc = min((S-2*m)/im.width, (S-2*m)/im.height)
             im = im.resize((round(im.width*sc), round(im.height*sc)), Image.LANCZOS)
             cv = Image.new('RGBA', (S, S), (0,0,0,0)); cv.alpha_composite(im, ((S-im.width)//2, (S-im.height)//2))
-            save_webp(cv, f'{out}/hair/{n}_{w}.webp', 86)
+            save_webp(cv, f'{out}/{dst}/{n}_{w}.webp', 86)
 
 def crop_alpha(im, pad=6):
     a = im.split()[3].point(lambda v: 255 if v > 20 else 0)
@@ -86,7 +86,8 @@ def video(name):
 
 if __name__=='__main__':
     import json
-    statics(); accessories(); misc(); hair()
+    statics(); accessories(); misc()
+    worn('wig', 'hair', ['mohawk','afro','pigtails','quiff']); worn('shades', 'shades', ['star','heart','round','square'])
     cfg = json.load(open(os.path.join(os.path.dirname(__file__),'dance_frames.json')))
     for n,fr in cfg.items():
         if os.path.exists(f'{raw}/{n}_dance.mp4'): dance(n, fr)

@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Same-a-saurus</title>
+<title>Same-o-saurus</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#7ed3f7">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="Same-a-saurus: a dinosaur matching puzzle game for little ones.">
+<meta name="description" content="Same-o-saurus: a dinosaur matching puzzle game for little ones.">
 <link rel="icon" href="/*__ICON__*/">
 <link rel="apple-touch-icon" href="/*__ICON__*/">
 <style>
@@ -234,7 +234,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#22335a" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 0 1 6 0v3Z"/></svg>Grown-ups</button>
       <button class="round" id="btnSoundT" aria-label="Sound"></button>
     </div>
-    <img class="logo" id="logo" alt="Same-a-saurus">
+    <img class="logo" id="logo" alt="Same-o-saurus">
     <div class="parade" id="parade"></div>
     <div class="mid">
       <button class="big pulse" id="btnPlay"><svg viewBox="0 0 24 24"><path fill="#fff" d="M7 4.5v15a1.5 1.5 0 0 0 2.3 1.3l12-7.5a1.5 1.5 0 0 0 0-2.6l-12-7.5A1.5 1.5 0 0 0 7 4.5Z"/></svg><span id="playLbl">Play</span></button>
@@ -317,7 +317,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         <div class="row"><span>Spelling and accent</span><div class="seg" data-k="spell"><button data-v="uk">colour</button><button data-v="us">color</button></div></div>
         <button class="btn warn" id="btnReset">Reset progress</button>
       </div>
-      <small>Same-a-saurus v1.0 · Art, animation and video made with OpenArt</small>
+      <small>Same-o-saurus v1.0 · Art, animation and video made with OpenArt</small>
     </div>
   </section>
 
@@ -329,8 +329,8 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 <script>
 "use strict";
 /* ============================================================
-   Same-a-saurus  ·  single-file build
-   Native wrapper hooks (optional):  window.SameASaurusBridge = {
+   Same-o-saurus  ·  single-file build
+   Native wrapper hooks (optional):  window.SameOSaurusBridge = {
      showInterstitial(): Promise<void>,      // show one short ad, resolve when closed
      purchaseRemoveAds(): Promise<boolean>,  // run the $0.99 in-app purchase
      restorePurchases(): Promise<boolean>,
@@ -372,8 +372,8 @@ const COLORS = {
 };
 const CO = Object.keys(COLORS);
 const SIZES = {S:{k:.56,name:'small'}, M:{k:.78,name:'medium'}, L:{k:1,name:'big'}};
-const GLASSES = {star:{f:'acc/sg_star.webp',r:108/320,name:'star'}, heart:{f:'acc/sg_heart.webp',r:132/320,name:'heart'},
-                 round:{f:'acc/sg_round.webp',r:136/320,name:'round'}, square:{f:'acc/sg_square.webp',r:114/320,name:'square'}};
+const GLASSES = {star:{f:'acc/sg_star.webp',name:'star',clash:['yellow','orange']}, heart:{f:'acc/sg_heart.webp',name:'heart',clash:['red','purple']},
+                 round:{f:'acc/sg_round.webp',name:'round',clash:['blue','purple']}, square:{f:'acc/sg_square.webp',name:'square',clash:['orange','red','yellow']}};
 // clash: body colours that would hide the wig
 const HAIR = {mohawk:{f:'acc/hair_mohawk.webp',name:'rainbow mohawk',clash:[]},
               afro:{f:'acc/hair_afro.webp',name:'curly orange hair',clash:['orange','red']},
@@ -445,22 +445,13 @@ function makeDino(d, o={}){
   const sp = SPECIES[d.sp], el = document.createElement('div');
   el.className = 'dino' + (o.sil ? ' sil' : '');
   const img = document.createElement('img'); img.className = 'body'; img.alt = ''; img.draggable = false;
-  const hk = d.hair && ASSETS['hair/'+d.sp+'_'+d.hair+'.webp'] ? 'hair/'+d.sp+'_'+d.hair+'.webp' : 'sprites/'+d.sp+'.webp';
+  // dinosaurs wearing a wig or sunglasses are their own redrawn sprites, so the accessory always fits
+  const worn = d.hair ? 'hair/'+d.sp+'_'+d.hair+'.webp' : d.glasses ? 'shades/'+d.sp+'_'+d.glasses+'.webp' : '';
+  const hk = worn && ASSETS[worn] ? worn : 'sprites/'+d.sp+'.webp';
   img.src = tint(hk, d.co); el.appendChild(img);
   const dn = document.createElement('div'); dn.className = 'dance'; el.appendChild(dn);
   el._d = d;
-  const pc = v => (v/1024*100) + '%';
-  if (d.glasses && GLASSES[d.glasses]){
-    const g = GLASSES[d.glasses], e = sp.eyes; let cx, cy, w, rot = 0;
-    if (e.length === 2){ const dx = e[1][0]-e[0][0], dy = e[1][1]-e[0][1], dist = Math.hypot(dx,dy);
-      w = Math.max(300, dist*3.8); cx = (e[0][0]+e[1][0])/2 + dist*.1; cy = (e[0][1]+e[1][1])/2; rot = Math.atan2(dy,dx)*180/Math.PI; }
-    else { w = 280; cx = e[0][0] + w*.14; cy = e[0][1]; rot = -6; }
-    const hh = w*g.r, a = document.createElement('img');
-    a.className = 'acc'; a.alt = ''; a.src = ASSETS[g.f];
-    a.style.cssText = `width:${pc(w)};left:${pc(cx-w/2)};top:${pc(cy-hh/2)};transform:rotate(${rot}deg)`;
-    el.appendChild(a);
-  }
-  return el;
+    return el;
 }
 function startDance(el){
   const d = el._d; if (!d || d.hair || d.glasses || !hasDance(d.sp)) return false;
@@ -602,7 +593,7 @@ const Voice = {
   // short reaction that never talks over the question
   react(key){ if (!save.voice || Snd.speaking()) return; const k = this.dir() + key + '.mp3'; if (Snd.hasClip(k)) Snd.playClips([k]); },
   tts(text){
-    const B = window.SameASaurusBridge;
+    const B = window.SameOSaurusBridge;
     if (B && typeof B.speak === 'function'){ try { B.speak(text, speechLang()); } catch(e){} return; }
     const ss = window.speechSynthesis; if (!ss || !window.SpeechSynthesisUtterance) return;
     try {
@@ -748,7 +739,7 @@ function genRound(level){
     const key = attr, table = attr === 'hair' ? HAIR : GLASSES, all = Object.keys(table), v = pick(all);
     let ov = others(all, v); if (level > 8) ov = ov.concat([null]);
     const od = spreadPick(ov, n-k), sps = spreadPick(SP, n);
-    const coFor = h => pick(attr === 'hair' && h ? CO.filter(c => !HAIR[h].clash.includes(c)) : CO);
+    const coFor = h => pick(h ? CO.filter(c => !table[h].clash.includes(c)) : CO);
     for (let i = 0; i < k; i++) M.push(mk({sp:sps[i], co:coFor(v), [key]:v}));
     for (let i = 0; i < n-k; i++) D.push(mk({sp:sps[k+i], co:coFor(od[i]), [key]:od[i]}));
     R.example = mk({sp:pick(SP), co:coFor(v), [key]:v});
@@ -928,7 +919,7 @@ function confirmBox(title, text, yes='OK', no='Cancel'){
   });
 }
 const Store = {
-  bridge(){ return window.SameASaurusBridge || null; },
+  bridge(){ return window.SameOSaurusBridge || null; },
   async showAd(){
     Voice.stop(); Snd.duck(0);
     const B = this.bridge();
@@ -959,7 +950,7 @@ const Store = {
   }
 };
 // native wrapper can call this when a purchase is confirmed outside the normal flow
-window.SameASaurus = { setAdFree(v){ save.adFree = !!v; persist(); refreshGrown(); }, version:'1.0.0' };
+window.SameOSaurus = { setAdFree(v){ save.adFree = !!v; persist(); refreshGrown(); }, version:'1.0.0' };
 
 /* ---------------- grown-ups ---------------- */
 let gateA = 0, gateIn = '', gateThen = null;
@@ -996,7 +987,7 @@ async function boot(){
   layout();
   $('#app').style.backgroundImage = `url(${ASSETS['bg.webp']})`;
   $('#logo').src = ASSETS['logo.webp'];
-  const keys = SP.map(s => 'sprites/'+s+'.webp').concat(SP.filter(hasDance).map(s => 'dance/'+s+'.webp'), Object.keys(ASSETS).filter(k => k.startsWith('hair/')));
+  const keys = SP.map(s => 'sprites/'+s+'.webp').concat(SP.filter(hasDance).map(s => 'dance/'+s+'.webp'), Object.keys(ASSETS).filter(k => k.startsWith('hair/') || k.startsWith('shades/')));
   await Promise.all(keys.map(k => loadImage(ASSETS[k]).then(i => { baseImg[k] = i; }).catch(() => {})));
   ['party.mp4','party2.mp4'].forEach((k, i) => { try { if (ASSETS[k]) vidUrls[i] = b64Blob(ASSETS[k]); } catch(e){} });
   SP.forEach(s => CO.forEach(c => warm('sprites/'+s+'.webp', c)));
