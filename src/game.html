@@ -392,14 +392,18 @@ const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 /* ---------------- data ---------------- */
 // eye/top coordinates are in the 1024px sprite space
 const SPECIES = {
-  trex:  {name:'T-Rex',          legs:2, horns:0, eyes:[[675,271],[742,256]], top:[690,212], hairW:210, like:['carno']},
+  trex:  {name:'T-Rex',          legs:2, horns:0, eyes:[[675,271],[742,256]], top:[690,212], hairW:210, like:['carno','pachy']},
   trice: {name:'Triceratops',    legs:4, horns:3, eyes:[[700,433],[774,416]], top:[610,250], hairW:250, like:['centro']},
-  stego: {name:'Stegosaurus',    legs:4, horns:0, eyes:[[768,470],[809,461]], top:[790,436], hairW:140, like:[]},
+  stego: {name:'Stegosaurus',    legs:4, horns:0, eyes:[[768,470],[809,461]], top:[790,436], hairW:140, like:['spino']},
   bronto:{name:'Brontosaurus',   legs:4, horns:0, eyes:[[778,243]],           top:[776,204], hairW:125, like:[]},
   ptero: {name:'Pterodactyl',    legs:2, horns:null, eyes:[[672,425],[717,416]], top:[676,380], hairW:140, like:[]},
   centro:{name:'Centrosaurus',   legs:4, horns:1, eyes:[[719,416],[783,399]], top:[640,256], hairW:250, like:['trice']},
   carno: {name:'Carnotaurus',    legs:2, horns:2, eyes:[[695,301],[787,291]], top:[722,246], hairW:200, like:['trex']},
   para:  {name:'Parasaurolophus',legs:2, horns:null, eyes:[[687,326],[762,314]], top:[742,270], hairW:170, like:[]},
+  spino: {name:'Spinosaurus',    legs:4, horns:0,    like:['stego']},
+  anky:  {name:'Ankylosaurus',   legs:4, horns:null, like:[]},
+  raptor:{name:'Velociraptor',   legs:2, horns:0,    like:[]},
+  pachy: {name:'Pachycephalosaurus', legs:2, horns:null, like:['trex','carno']},
 };
 const SP = Object.keys(SPECIES);
 // hue shift targets for the green base art (null = leave as drawn)
@@ -413,13 +417,23 @@ const COLORS = {
 };
 const CO = Object.keys(COLORS);
 const SIZES = {S:{k:.56,name:'small'}, M:{k:.78,name:'medium'}, L:{k:1,name:'big'}};
-const GLASSES = {star:{f:'acc/sg_star.webp',name:'star',clash:['yellow','orange']}, heart:{f:'acc/sg_heart.webp',name:'heart',clash:['red','purple']},
-                 round:{f:'acc/sg_round.webp',name:'round',clash:['blue','purple']}, square:{f:'acc/sg_square.webp',name:'square',clash:['orange','red','yellow']}};
-// clash: body colours that would hide the wig
-const HAIR = {mohawk:{f:'acc/hair_mohawk.webp',name:'rainbow mohawk',clash:[]},
-              afro:{f:'acc/hair_afro.webp',name:'curly orange hair',clash:['orange','red']},
-              pigtails:{f:'acc/hair_pigtails.webp',name:'pigtails',clash:['yellow','orange']},
-              quiff:{f:'acc/hair_quiff.webp',name:'purple quiff',clash:['purple','blue']}};
+// worn accessories: each one is a redrawn sprite of the species wearing it. clash = body colours that would hide it
+const GLASSES = {star:{name:'star sunglasses',clash:['yellow','orange']}, heart:{name:'heart sunglasses',clash:['red','purple']},
+                 round:{name:'round sunglasses',clash:['blue','purple']}, square:{name:'square sunglasses',clash:['orange','red','yellow']}};
+const HAIR = {mohawk:{name:'rainbow mohawks',clash:[]}, afro:{name:'curly orange hair',clash:['orange','red']},
+              pigtails:{name:'pigtails',clash:['yellow','orange']}, quiff:{name:'purple quiffs',clash:['purple','blue']}};
+const HATS = {party:{name:'party hats',clash:['red']}, cowboy:{name:'cowboy hats',clash:['orange','red']},
+              top:{name:'top hats',clash:[]}, crown:{name:'crowns',clash:['yellow','orange']}};
+const SHOES = {sneakers:{name:'red shoes',clash:['red','orange']}, boots:{name:'yellow boots',clash:['yellow','orange']},
+               skates:{name:'roller skates',clash:[]}, flippers:{name:'purple flippers',clash:['purple','blue']}};
+// patterns are painted onto the body in code (see tint), so they follow whatever colour the dinosaur is
+const PATTERNS = {spots:{name:'spotty ones',clash:['yellow']}, stripes:{name:'stripy ones',clash:['yellow']}, stars:{name:'ones with stars',clash:['yellow']}};
+const WORN = {hair:{dir:'hair/', table:HAIR, splash:'Silly hairstyles!', word:'hairstyle'}, glasses:{dir:'shades/', table:GLASSES, splash:'Super sunglasses!', word:'sunglasses'},
+              hat:{dir:'hats/', table:HATS, splash:'Happy hats!', word:'hat'}, shoes:{dir:'shoes/', table:SHOES, splash:'Silly shoes!', word:'shoes'},
+              pattern:{dir:null, table:PATTERNS, splash:'Pretty patterns!', word:'pattern'}};
+const BONUS = ['hat','glasses','shoes','hair','pattern'];
+const wornKey = d => { for (const a of BONUS){ const w = WORN[a]; if (w.dir && d[a]) return w.dir + d.sp + '_' + d[a] + '.webp'; } return ''; };
+const dressed = d => BONUS.some(a => d[a]);
 const CHEERS = ['ROAR-SOME!','DINO-MITE!','T-RIFIC!','STOMP-TASTIC!','YOU DID IT!','SUPER STAR!','RAWR-MAZING!'];
 const CHEER_COL = ['#ff5d5d','#ff9f1c','#ffc93c','#34c759','#3fa9f5','#8b5cf6'];
 
@@ -450,12 +464,30 @@ function speechLang(){
 /* ---------------- art: tinting ---------------- */
 const baseImg = {}, tintCache = {};
 function loadImage(src){ return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('img')); i.src = src; }); }
-function tint(key, color){
-  const ck = key + '|' + color;
+const patCache = {};
+function patternMask(pat, S){
+  const ck = pat + S; if (patCache[ck]) return patCache[ck];
+  const cv = document.createElement('canvas'); cv.width = cv.height = S; const x = cv.getContext('2d', {willReadFrequently:true});
+  x.fillStyle = '#fff'; x.strokeStyle = '#fff';
+  if (pat === 'stripes'){ x.lineWidth = S*.055; for (let i = -S; i < S*2; i += S*.13){ x.beginPath(); x.moveTo(i, 0); x.lineTo(i - S*.25, S); x.stroke(); } }
+  else {
+    const g = pat === 'spots' ? S*.115 : S*.17, r = pat === 'spots' ? S*.033 : S*.068; let row = 0;
+    for (let y = g*.4; y < S + g; y += g*.86, row++) for (let px = (row % 2 ? g/2 : 0); px < S + g; px += g){
+      x.beginPath();
+      if (pat === 'spots') x.arc(px, y, r, 0, 6.3);
+      else { for (let i = 0; i < 10; i++){ const a = -Math.PI/2 + i*Math.PI/5, q = i % 2 ? r*.46 : r; x.lineTo(px + Math.cos(a)*q, y + Math.sin(a)*q); } }
+      x.closePath(); x.fill();
+    }
+  }
+  return (patCache[ck] = x.getImageData(0, 0, S, S).data);
+}
+function tint(key, color, pat){
+  const ck = key + '|' + color + (pat ? '|' + pat : '');
   if (tintCache[ck]) return tintCache[ck];
   const src = ASSETS[key], c = COLORS[color], img = baseImg[key];
-  if (!c || c.h == null || !img) return (tintCache[ck] = src);
+  if (!c || !img || (c.h == null && !pat)) return (tintCache[ck] = src);
   try {
+    const pm = pat ? patternMask(pat, img.naturalWidth) : null, PC = color === 'yellow' ? [255,255,255] : [255,247,214];
     const cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
     const cx = cv.getContext('2d', {willReadFrequently:true}); cx.drawImage(img, 0, 0);
     const id = cx.getImageData(0, 0, cv.width, cv.height), d = id.data, th = c.h/360;
@@ -467,6 +499,12 @@ function tint(key, color){
       const s = df / (1 - Math.abs(2*l-1) || 1);
       const h = ((b-r)/df + 2)/6;                                  // hue when g is max
       if (h < .17 || h > .47 || s < .16 || l < .1) continue;
+      if (pm && pm[i+3] > 0 && l > .3){                           // pattern shows on the lit body, not the dark outline
+        const a = pm[i+3]/255 * clamp((l - .3)*8, 0, 1) * .96, k = .82 + l*.3;
+        d[i] += (PC[0]*k - d[i])*a; d[i+1] += (PC[1]*k - d[i+1])*a; d[i+2] += (PC[2]*k - d[i+2])*a;
+        if (a > .5) continue;
+      }
+      if (c.h == null) continue;
       const s2 = clamp(s*c.s, 0, 1), l2 = clamp(l*c.l, 0, .94);
       const q = l2 < .5 ? l2*(1+s2) : l2+s2-l2*s2, p = 2*l2-q;
       const f = t => { t = (t%1+1)%1; return t < 1/6 ? p+(q-p)*6*t : t < .5 ? q : t < 2/3 ? p+(q-p)*(2/3-t)*6 : p; };
@@ -482,20 +520,22 @@ function warm(key, color){ warmQ.push([key,color]); if (!warming){ warming = tru
 function warmStep(){ const j = warmQ.shift(); if (!j){ warming = false; return; } tint(j[0], j[1]); setTimeout(warmStep, 16); }
 
 /* ---------------- dino element ---------------- */
+function dinoSrc(d){
+  const worn = wornKey(d);
+  return tint(worn && ASSETS[worn] ? worn : 'sprites/'+d.sp+'.webp', d.co, d.pattern || undefined);
+}
 function makeDino(d, o={}){
   const sp = SPECIES[d.sp], el = document.createElement('div');
   el.className = 'dino' + (o.sil ? ' sil' : '');
   const img = document.createElement('img'); img.className = 'body'; img.alt = ''; img.draggable = false;
-  // dinosaurs wearing a wig or sunglasses are their own redrawn sprites, so the accessory always fits
-  const worn = d.hair ? 'hair/'+d.sp+'_'+d.hair+'.webp' : d.glasses ? 'shades/'+d.sp+'_'+d.glasses+'.webp' : '';
-  const hk = worn && ASSETS[worn] ? worn : 'sprites/'+d.sp+'.webp';
-  img.src = tint(hk, d.co); el.appendChild(img);
+  // dinosaurs wearing something are their own redrawn sprites, so the accessory always fits
+  img.src = dinoSrc(d); el.appendChild(img);
   const dn = document.createElement('div'); dn.className = 'dance'; el.appendChild(dn);
   el._d = d;
     return el;
 }
 function startDance(el){
-  const d = el._d; if (!d || d.hair || d.glasses || !hasDance(d.sp)) return false;
+  const d = el._d; if (!d || dressed(d) || !hasDance(d.sp)) return false;
   const n = DANCE_FRAMES[d.sp], dn = el.querySelector('.dance');
   dn.style.backgroundImage = `url(${tint('dance/'+d.sp+'.webp', d.co)})`;
   dn.style.backgroundSize = (n*100) + '% 100%';
@@ -744,8 +784,8 @@ function placeCells(){
 /* ---------------- round generation ---------------- */
 const BASE = ['colour','species','size','legs','shape','horns'];
 function attrFor(level){
-  if (level % 4 === 0) return (level/4) % 2 === 1 ? 'glasses' : 'hair';
-  return BASE[(level - Math.floor(level/4) - 1) % 6];
+  if (level % 3 === 0) return BONUS[(level/3 - 1) % BONUS.length];              // every third level is a silly one
+  return BASE[(level - Math.floor(level/3) - 1) % 6];
 }
 function shapeFor(level){
   if (level <= 2) return {n:4, k:2};
@@ -755,12 +795,12 @@ function shapeFor(level){
   return {n:pick([9,10,12]), k:3+rnd(3)};
 }
 function genRound(level){
-  const attr = attrFor(level), {n, k} = shapeFor(level), vary = level > 4, bonus = attr === 'glasses' || attr === 'hair';
+  const attr = attrFor(level), {n, k} = shapeFor(level), vary = level > 4, bonus = BONUS.includes(attr);
   const R = {level, attr, bonus, sil: attr === 'shape', n, k, items: [], example: null, hint: '', number: null};
   const others = (all, v) => all.filter(x => x !== v);
   const spreadPick = (pool, m) => { let out = []; while (out.length < m) out = out.concat(shuffle(pool)); return out.slice(0, m); };
   const baseSp = pick(SP), baseCo = pick(CO), szAll = 'M';
-  const mk = (o) => Object.assign({sp:baseSp, co:baseCo, sz:szAll, hair:null, glasses:null}, o);
+  const mk = (o) => Object.assign({sp:baseSp, co:baseCo, sz:szAll, hair:null, glasses:null, hat:null, shoes:null, pattern:null}, o);
   let M = [], D = [];
   if (attr === 'colour'){
     const c = pick(CO), sps = vary ? spreadPick(SP, n) : Array(n).fill(baseSp), oc = spreadPick(others(CO, c), n-k);
@@ -795,15 +835,14 @@ function genRound(level){
     R.example = mk({sp:pick(a)}); R.number = v;
     R.hint = v === 0 ? 'Find the ones with no horns!' : v === 1 ? 'Find the ones with 1 horn!' : `Find the ones with ${v} horns!`; R.hk = 'h_horns_' + v;
   } else {
-    const key = attr, table = attr === 'hair' ? HAIR : GLASSES, all = Object.keys(table), v = pick(all);
+    const key = attr, table = WORN[attr].table, all = Object.keys(table), v = pick(all);
     let ov = others(all, v); if (level > 8) ov = ov.concat([null]);
     const od = spreadPick(ov, n-k), sps = spreadPick(SP, n);
     const coFor = h => pick(h ? CO.filter(c => !table[h].clash.includes(c)) : CO);
     for (let i = 0; i < k; i++) M.push(mk({sp:sps[i], co:coFor(v), [key]:v}));
     for (let i = 0; i < n-k; i++) D.push(mk({sp:sps[k+i], co:coFor(od[i]), [key]:od[i]}));
     R.example = mk({sp:pick(SP), co:coFor(v), [key]:v});
-    R.hint = attr === 'hair' ? `Find the ${table[v].name}!` : `Find the ${table[v].name} sunglasses!`;
-    R.hk = (attr === 'hair' ? 'h_hair_' : 'h_gl_') + v;
+    R.hint = `Find the ${table[v].name}!`; R.hk = 'h_' + attr + '_' + v;
   }
   M.forEach(d => d.match = true); D.forEach(d => d.match = false);
   R.items = shuffle(M.concat(D));
@@ -817,8 +856,7 @@ function sentenceParts(attr){
     case 'size': return ['that are the same', 'size'];
     case 'legs': return ['that have the same', 'number of legs'];
     case 'horns': return ['that have the same', 'number of horns'];
-    case 'hair': return ['that have the same', 'hairstyle'];
-    default: return ['that have the same', 'sunglasses'];
+    default: return ['that have the same', WORN[attr].word];
   }
 }
 
@@ -843,7 +881,8 @@ async function startRound(){
   $('#levelTag').textContent = 'Level ' + R.level;
   const [a, b] = sentenceParts(R.attr);
   const KW = {colour:['linear-gradient(90deg,#ff5d5d,#ff9f1c,#e6b800,#34c759,#3fa9f5,#8b5cf6)','#8b5cf6'], species:['#16a34a','#16a34a'], shape:['#1b2a4a','#1b2a4a'], size:['#ff7a00','#ff7a00'],
-    legs:['#0ea5e9','#0ea5e9'], horns:['#e11d48','#e11d48'], hair:['linear-gradient(90deg,#ff5d5d,#ff9f1c,#8b5cf6)','#ff5d5d'], glasses:['linear-gradient(90deg,#0ea5e9,#8b5cf6,#ff4fa3)','#8b5cf6']}[R.attr];
+    legs:['#0ea5e9','#0ea5e9'], horns:['#e11d48','#e11d48'], hair:['linear-gradient(90deg,#ff5d5d,#ff9f1c,#8b5cf6)','#ff5d5d'], glasses:['linear-gradient(90deg,#0ea5e9,#8b5cf6,#ff4fa3)','#8b5cf6'],
+    hat:['linear-gradient(90deg,#e11d48,#ff9f1c,#e6b800)','#e11d48'], shoes:['linear-gradient(90deg,#ff5d5d,#e6b800,#8b5cf6)','#ff5d5d'], pattern:['linear-gradient(90deg,#ff4fa3,#8b5cf6,#0ea5e9)','#ff4fa3']}[R.attr];
   $('#sentence').innerHTML = `Match all the dinosaurs ${a} <b class="${b.length > 8 ? 'long' : ''}" style="--kw:${KW[0]};--kw2:${KW[1]}">${b}</b>`;
   $('#hint').textContent = R.hint;
   $('#pips').innerHTML = Array(R.k).fill('<svg class="pip" viewBox="0 0 24 24"><path d="m12 2 3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8l-6.3 3.6 1.5-7.1L1.8 9.4 9 8.6Z"/></svg>').join('');
@@ -865,8 +904,8 @@ async function startRound(){
   });
   placeCells();
   if (R.bonus){
-    $('#splashP').textContent = R.attr === 'hair' ? 'Silly hairstyles!' : 'Super sunglasses!';
-    $('#splashImg').src = ASSETS[(R.attr === 'hair' ? HAIR : GLASSES)[R.example[R.attr]].f];
+    $('#splashP').textContent = WORN[R.attr].splash;
+    $('#splashImg').src = dinoSrc(R.example);
     show('splash', true); Snd.fx('bonus'); FX.burst(innerWidth/2, innerHeight/2, 50);
     await wait(1700); if (token !== G.token) return; show('splash', false);
   }
@@ -1068,7 +1107,7 @@ async function boot(){
   layout();
   $('#bgd').style.backgroundImage = `url(${ASSETS['bg.webp']})`;
   $('#logo').src = ASSETS['logo.webp'];
-  const keys = SP.map(s => 'sprites/'+s+'.webp').concat(SP.filter(hasDance).map(s => 'dance/'+s+'.webp'), Object.keys(ASSETS).filter(k => k.startsWith('hair/') || k.startsWith('shades/')));
+  const keys = SP.map(s => 'sprites/'+s+'.webp').concat(SP.filter(hasDance).map(s => 'dance/'+s+'.webp'), Object.keys(ASSETS).filter(k => /^(hair|shades|hats|shoes)\//.test(k)));
   await Promise.all(keys.map(k => loadImage(ASSETS[k]).then(i => { baseImg[k] = i; }).catch(() => {})));
   ['party.mp4','party2.mp4'].forEach((k, i) => { try { if (ASSETS[k]) vidUrls[i] = b64Blob(ASSETS[k]); } catch(e){} });
   SP.forEach(s => CO.forEach(c => warm('sprites/'+s+'.webp', c)));

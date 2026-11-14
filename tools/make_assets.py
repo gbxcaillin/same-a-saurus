@@ -5,7 +5,7 @@ import sys, os, subprocess, tempfile
 import numpy as np
 from PIL import Image
 raw, proc, out = sys.argv[1:4]
-SPECIES = ['trex','trice','stego','bronto','ptero','centro','carno','para']
+SPECIES = ['trex','trice','stego','bronto','ptero','centro','carno','para','spino','anky','raptor','pachy']
 
 def save_webp(im, path, q=86):
     im.save(path, 'WEBP', quality=q, method=6)
@@ -15,31 +15,24 @@ def statics():
         im = Image.open(f'{proc}/{n}.png').convert('RGBA').resize((512,512), Image.LANCZOS)
         save_webp(im, f'{out}/sprites/{n}.webp', 88)
 
-def worn(src, dst, kinds):
-    """Dinosaurs redrawn wearing an accessory: raw/<src>/<species>_<kind>.png -> assets/<dst>/*.webp"""
+def worn(src, dst, kinds, prefix=''):
+    """Dinosaurs redrawn wearing an accessory: raw/<src>/<species>_<prefix><kind>.png -> assets/<dst>/<species>_<kind>.webp"""
     os.makedirs(f'{out}/{dst}', exist_ok=True)
     for n in SPECIES:
         for w in kinds:
-            p = f'{raw}/{src}/{n}_{w}.png'
+            p = f'{raw}/{src}/{n}_{prefix}{w}.png'
             if not os.path.exists(p): continue
             im = Image.open(p).convert('RGBA')
             a = im.split()[3].point(lambda v: 255 if v > 24 else 0)
-            im = im.crop(a.getbbox()); S = 512; m = int(S*0.08); sc = min((S-2*m)/im.width, (S-2*m)/im.height)
+            im = im.crop(a.getbbox()); S = 448; m = int(S*0.08); sc = min((S-2*m)/im.width, (S-2*m)/im.height)
             im = im.resize((round(im.width*sc), round(im.height*sc)), Image.LANCZOS)
             cv = Image.new('RGBA', (S, S), (0,0,0,0)); cv.alpha_composite(im, ((S-im.width)//2, (S-im.height)//2))
-            save_webp(cv, f'{out}/{dst}/{n}_{w}.webp', 86)
+            save_webp(cv, f'{out}/{dst}/{n}_{w}.webp', 82)
 
 def crop_alpha(im, pad=6):
     a = im.split()[3].point(lambda v: 255 if v > 20 else 0)
     x0,y0,x1,y1 = a.getbbox()
     return im.crop((max(0,x0-pad),max(0,y0-pad),min(im.width,x1+pad),min(im.height,y1+pad)))
-
-def accessories():
-    for n in ['sg_star','sg_heart','sg_round','sg_square','hair_mohawk','hair_afro','hair_pigtails','hair_quiff']:
-        im = crop_alpha(Image.open(f'{raw}/{n}.png').convert('RGBA'))
-        w = 320; im = im.resize((w, round(im.height*w/im.width)), Image.LANCZOS)
-        save_webp(im, f'{out}/acc/{n}.webp', 88)
-        print(n, im.size)
 
 def misc():
     bg = Image.open(f'{raw}/bg.png').convert('RGB').resize((1400,1400), Image.LANCZOS)
@@ -86,9 +79,14 @@ def video(name, size=480, crf='29'):
 
 if __name__=='__main__':
     import json
-    statics(); accessories(); misc()
-    worn('wig', 'hair', ['mohawk','afro','pigtails','quiff']); worn('shades', 'shades', ['star','heart','round','square'])
+    statics()
+    if '--sprites-only' not in sys.argv: misc()
+    HAIR = ['mohawk','afro','pigtails','quiff']; SHADES = ['star','heart','round','square']
+    worn('wig', 'hair', HAIR); worn('shades', 'shades', SHADES)                       # first eight species
+    worn('worn', 'hair', HAIR, 'hair_'); worn('worn', 'shades', SHADES, 'shades_')    # later species
+    worn('worn', 'hats', ['party','cowboy','top','crown'], 'hat_'); worn('worn', 'shoes', ['sneakers','boots','skates','flippers'], 'shoes_')
     cfg = json.load(open(os.path.join(os.path.dirname(__file__),'dance_frames.json')))
     for n,fr in cfg.items():
         if os.path.exists(f'{raw}/{n}_dance.mp4'): dance(n, fr)
-    video('party'); video('party2'); video('intro', 720, '25')    # full-resolution master is kept in masters/
+    if '--sprites-only' not in sys.argv:
+        video('party'); video('party2'); video('intro', 720, '25')    # full-resolution master is kept in masters/

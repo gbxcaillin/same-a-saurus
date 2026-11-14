@@ -2,8 +2,9 @@
 
 A dinosaur matching puzzle game for ages 3 to 5. A sentence at the top asks the child to
 "Match all the dinosaurs that are the same colour" (or species, shape, size, number of legs,
-number of horns) and they tap every dinosaur that matches the example. Every fourth level is a
-silly bonus round: matching sunglasses or matching hairstyles.
+number of horns) and they tap every dinosaur that matches the example. Every third level is a
+silly bonus round: matching hats, sunglasses, shoes, hairstyles or body patterns (spots, stripes, stars).
+There are 12 species.
 
 **Play it:** open `index.html` in any modern browser. It is one self-contained file (about 7.5 MB)
 with all art, animation, video, music and sound built in. No server or internet needed.
@@ -70,7 +71,8 @@ All art, sprite animation and video was generated with OpenArt:
 | Asset | Model |
 | --- | --- |
 | 8 dinosaur species, accessories, background, logo, icon, party scenes | Seedream 5.5 (transparent PNG) |
-| 64 accessory sprites (every species redrawn wearing each of the 4 wigs and 4 sunglasses, so they fit the head) | Seedream 5.5 image-to-image |
+| 192 accessory sprites (each of the 12 species redrawn wearing each of the 4 wigs, 4 sunglasses, 4 hats and 4 pairs of shoes, so they always fit) | Seedream 5.5 image-to-image |
+| Body patterns (spots, stripes, stars) | painted in code onto the body colour, no art needed |
 | 8 dance loops (cut into sprite strips) | PixVerse V6 image-to-video on a magenta key colour |
 | 2 celebration clips and the 10 second opening video (3 shots, started from a frame built from the game's own art) | Kling 3 Omni image-to-video |
 

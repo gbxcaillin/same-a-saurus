@@ -6,5 +6,8 @@
  "q_legs": "Match all the dinosaurs that have the same number of legs!",
  "q_horns": "Match all the dinosaurs that have the same number of horns!",
  "q_hair": "Match all the dinosaurs that have the same hairstyle!",
- "q_glasses": "Match all the dinosaurs that have the same sunglasses!"
+ "q_glasses": "Match all the dinosaurs that have the same sunglasses!",
+ "q_hat": "Match all the dinosaurs that have the same hat!",
+ "q_shoes": "Match all the dinosaurs that have the same shoes!",
+ "q_pattern": "Match all the dinosaurs that have the same pattern!"
 }
