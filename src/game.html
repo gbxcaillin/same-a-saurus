@@ -74,10 +74,13 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 
 /* ---------- intro video ---------- */
 #intro{padding:0;background:#bfe6f7;z-index:40;overflow:hidden}
-#intro video,#intro .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* one square master: the action is staged in the centre, so cover-cropping suits 9:16, 4:3 and tablets alike */
+#intro video,#intro .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
 #intro .ilogo{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 8%);width:min(90%,calc(120*var(--u)));transform:translateX(-50%) scale(0);
   filter:drop-shadow(0 calc(1*var(--u)) calc(1.4*var(--u)) #1b2a4a66);transition:transform .7s cubic-bezier(.3,1.8,.5,1)}
 #intro .ilogo.in{transform:translateX(-50%) scale(1)}
+.land #intro video,.land #intro .poster{object-position:50% 58%}   /* wide screens: favour the lower half so feet stay in shot */
+.land #intro .ilogo{width:min(52%,calc(95*var(--u)));top:calc(env(safe-area-inset-top,0px) + 3%)}
 #btnSkip{position:absolute;right:calc(env(safe-area-inset-right,0px) + 3*var(--u));bottom:calc(env(safe-area-inset-bottom,0px) + 3*var(--u));box-shadow:0 calc(.6*var(--u)) 0 #c9d6e8, 0 calc(1*var(--u)) calc(2*var(--u)) #1b2a4a40}
 #title .tr{display:flex;gap:calc(2*var(--u))}
 /* ---------- title ---------- */

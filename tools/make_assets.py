@@ -82,7 +82,7 @@ def dance(n, frames, size=256):
 def video(name, size=480, crf='29'):
     src=f'{raw}/{name}.mp4'
     if os.path.exists(src):
-        subprocess.run(['ffmpeg','-v','error','-y','-i',src,'-an','-vf',f'scale={size}:{size}','-c:v','libx264','-profile:v','baseline','-level','3.0','-pix_fmt','yuv420p','-crf',crf,'-preset','veryslow','-movflags','+faststart',f'{out}/{name}.mp4'],check=True)
+        subprocess.run(['ffmpeg','-v','error','-y','-i',src,'-an','-vf',f'scale={size}:{size}','-c:v','libx264','-profile:v','main','-level','3.1','-pix_fmt','yuv420p','-crf',crf,'-preset','veryslow','-movflags','+faststart',f'{out}/{name}.mp4'],check=True)
 
 if __name__=='__main__':
     import json
@@ -91,4 +91,4 @@ if __name__=='__main__':
     cfg = json.load(open(os.path.join(os.path.dirname(__file__),'dance_frames.json')))
     for n,fr in cfg.items():
         if os.path.exists(f'{raw}/{n}_dance.mp4'): dance(n, fr)
-    video('party'); video('party2'); video('intro', 540, '28')
+    video('party'); video('party2'); video('intro', 720, '25')    # full-resolution master is kept in masters/

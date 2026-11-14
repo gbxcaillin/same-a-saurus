@@ -5,7 +5,7 @@ A dinosaur matching puzzle game for ages 3 to 5. A sentence at the top asks the 
 number of horns) and they tap every dinosaur that matches the example. Every fourth level is a
 silly bonus round: matching sunglasses or matching hairstyles.
 
-**Play it:** open `index.html` in any modern browser. It is one self-contained file (about 6.5 MB)
+**Play it:** open `index.html` in any modern browser. It is one self-contained file (about 7.5 MB)
 with all art, animation, video, music and sound built in. No server or internet needed.
 
 ## How it plays
@@ -13,7 +13,8 @@ with all art, animation, video, music and sound built in. No server or internet 
 - An opening video plays when the game loads: a lonely T-Rex finds its matching twin and the matching
   pairs pile in for a dance. The logo appears over the ending, then the camera tilts up into the sky
   and comes back down onto the title page. It can be skipped, and the camera button on the title page
-  replays it. The video starts silent (browsers require a tap before sound); the first tap starts the music.
+  replays it. It is one square video with all the action staged in the centre, so it crops cleanly to
+  9:16 phones, 4:3 and tablets in either orientation. The video starts silent (browsers require a tap before sound); the first tap starts the music.
 
 - No timer and no way to fail. A wrong tap gets a gentle wobble; after two wrong taps, or 9 seconds
   of waiting, one correct dinosaur wiggles as a hint.
@@ -83,6 +84,7 @@ per species. Pterodactyl and Parasaurolophus are left out of horn rounds because
 index.html            the built game (commit this, ship this)
 src/game.html         source template (edit this)
 assets/               processed art, sprite strips, video
+masters/              full-resolution originals not built into the game (1440px opening video)
 tools/build.py        inlines assets/ into index.html
 tools/make_assets.py  raw OpenArt downloads -> assets/ (cut-outs, keying, sprite strips, video encode)
 tools/dance_frames.json  which video frames make each dance loop
