@@ -55,25 +55,21 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 @keyframes wob{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
 
 /* ---------- title ---------- */
-#title{flex-direction:column;align-items:center;justify-content:space-between;gap:calc(1*var(--u))}
-#title .top{width:100%;display:flex;justify-content:space-between;align-items:flex-start}
-#title .logo{width:min(92%,calc(120*var(--u)));max-height:32%;object-fit:contain;animation:logo 2.6s ease-in-out infinite;filter:drop-shadow(0 calc(1*var(--u)) calc(1.2*var(--u)) #1b2a4a40)}
+#title{flex-direction:column;gap:calc(1*var(--u))}
+#title .top{width:100%;display:flex;justify-content:space-between;align-items:flex-start;flex:none}
+#title .body{flex:1;min-height:0;width:100%;display:grid;grid-template:"logo" auto "parade" 1fr "mid" auto / 100%;justify-items:center;gap:calc(1*var(--u))}
+#title .logo{grid-area:logo;width:min(94%,calc(125*var(--u)));max-height:26vh;object-fit:contain;animation:logo 2.6s ease-in-out infinite;filter:drop-shadow(0 calc(1*var(--u)) calc(1.2*var(--u)) #1b2a4a40)}
 @keyframes logo{0%,100%{transform:rotate(-2deg) scale(1)}50%{transform:rotate(2deg) scale(1.04)}}
-#title .gap{flex:1;min-height:0}
-#title .parade{display:flex;align-items:flex-end;justify-content:center;gap:0;width:100%;flex:none;height:min(34%,36vw);min-height:0;margin-bottom:calc(-1*var(--u))}
-#title .parade .slot{height:100%;aspect-ratio:1;max-width:36%;position:relative;margin:0 -1%}
+/* the dinosaurs are sized and placed by placeParade() so they fill whatever space is left */
+#title .parade{grid-area:parade;position:relative;width:100%;height:100%;min-height:0}
+#title .parade .slot{position:absolute;aspect-ratio:1}
 #title .parade .slot::before{content:"";position:absolute;left:14%;right:14%;bottom:9%;height:9%;border-radius:50%;background:radial-gradient(closest-side,#1b2a4a55,#1b2a4a22 60%,#1b2a4a00)}
-#title .mid{display:flex;flex-direction:column;align-items:center;gap:calc(2.5*var(--u))}
+#title .mid{grid-area:mid;display:flex;flex-direction:column;align-items:center;gap:calc(2*var(--u));padding-bottom:calc(1*var(--u))}
 #title .stars{font-weight:900;font-size:calc(4.2*var(--u));background:#ffffffdd;border-radius:999px;padding:calc(1*var(--u)) calc(3*var(--u));display:flex;align-items:center;gap:calc(1.2*var(--u))}
 #title .stars svg{width:calc(5*var(--u));height:calc(5*var(--u))}
-#title .bottom{width:100%;height:calc(2*var(--u))}
-.land #title{flex-direction:row;flex-wrap:wrap;align-content:space-between;justify-content:space-between;align-items:center}
-.land #title .top{order:0}
-.land #title .logo{order:1;width:52%;max-height:40%}
-.land #title .mid{order:2;width:44%}
-.land #title .parade{order:3;max-height:none;flex:none;height:42%;width:100%}
-.land #title .bottom{display:none}
-.land #title .gap{display:none}
+.land #title .body{grid-template:"logo parade" 1fr "mid parade" 1fr / 42% 1fr;align-items:center}
+.land #title .logo{width:100%;max-height:100%;align-self:end}
+.land #title .mid{align-self:start}
 
 /* ---------- game ---------- */
 #game{flex-direction:column;gap:calc(1.6*var(--u))}
@@ -237,14 +233,14 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#22335a" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 0 1 6 0v3Z"/></svg>Grown-ups</button>
       <button class="round" id="btnSoundT" aria-label="Sound"></button>
     </div>
-    <img class="logo" id="logo" alt="Same-o-saurus">
-    <div class="gap"></div>
-    <div class="parade" id="parade"></div>
-    <div class="mid">
-      <button class="big pulse" id="btnPlay"><svg viewBox="0 0 24 24"><path fill="#fff" d="M7 4.5v15a1.5 1.5 0 0 0 2.3 1.3l12-7.5a1.5 1.5 0 0 0 0-2.6l-12-7.5A1.5 1.5 0 0 0 7 4.5Z"/></svg><span id="playLbl">Play</span></button>
-      <div class="stars"><svg viewBox="0 0 24 24"><path fill="#ffc93c" stroke="#e09a00" d="m12 2 3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8l-6.3 3.6 1.5-7.1L1.8 9.4 9 8.6Z"/></svg><span id="starCount">0</span></div>
+    <div class="body">
+      <img class="logo" id="logo" alt="Same-o-saurus">
+      <div class="parade" id="parade"></div>
+      <div class="mid">
+        <button class="big pulse" id="btnPlay"><svg viewBox="0 0 24 24"><path fill="#fff" d="M7 4.5v15a1.5 1.5 0 0 0 2.3 1.3l12-7.5a1.5 1.5 0 0 0 0-2.6l-12-7.5A1.5 1.5 0 0 0 7 4.5Z"/></svg><span id="playLbl">Play</span></button>
+        <div class="stars"><svg viewBox="0 0 24 24"><path fill="#ffc93c" stroke="#e09a00" d="m12 2 3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8l-6.3 3.6 1.5-7.1L1.8 9.4 9 8.6Z"/></svg><span id="starCount">0</span></div>
+      </div>
     </div>
-    <div class="bottom"></div>
   </section>
 
   <section id="game" class="screen">
@@ -668,7 +664,24 @@ function layout(){
   const u = clamp(Math.min(W, H)/100, 3, 11) * (land && H < 500 ? .92 : 1);
   document.documentElement.style.setProperty('--u', u.toFixed(3)+'px');
   $('#app').classList.toggle('land', land);
-  FX.size(); placeCells();
+  FX.size(); placeCells(); placeParade();
+}
+// Title-screen dinosaurs: pick the arrangement (one row, or one in front and two behind) that gives the
+// biggest dinosaurs for the space, and keep every dinosaur's feet below the background's horizon.
+function placeParade(){
+  const pr = $('#parade'), sl = [...pr.children]; if (sl.length !== 3 || !$('#title').classList.contains('on')) return;
+  const r = pr.getBoundingClientRect(), w = r.width, h = r.height; if (w < 10 || h < 10) return;
+  const side = Math.max(innerWidth, innerHeight), groundY = (innerHeight - side)/2 + side*.6 - r.top;   // meadow line, in parade coords
+  const feet = h - 2;                                                 // front feet sit on the bottom edge
+  const room = Math.max(0, feet - groundY);                           // how far back a dinosaur may stand
+  const sRow = Math.min(h/.8, w/2.25);
+  let sTri = Math.min(h/1.22, w/1.62); const lift = Math.min(.44*sTri, room);
+  const tri = lift >= .3*sTri && sTri > sRow*1.08;
+  const put = (el, cx, feetY, s, z) => { const st = el.style; st.width = s + 'px'; st.left = (cx - s/2) + 'px'; st.top = (feetY - s*.86) + 'px'; st.zIndex = z; };
+  if (tri){ const b = sTri*.86;
+    put(sl[0], w/2 - sTri*.5, feet - lift, b, 1); put(sl[2], w/2 + sTri*.5, feet - lift, b, 1); put(sl[1], w/2, feet, sTri, 2);
+  } else { const s = sRow;
+    put(sl[0], w/2 - s*.74, feet, s, 1); put(sl[1], w/2, feet, s, 2); put(sl[2], w/2 + s*.74, feet, s, 1); }
 }
 let cells = [];
 function placeCells(){
@@ -905,7 +918,7 @@ function showTitle(){
       s.style.pointerEvents = 'auto'; s.addEventListener('pointerdown', () => { Snd.unlock(); Snd.fx('roar'); const r = s.getBoundingClientRect(); FX.burst(r.left + r.width/2, r.top + r.height/3, 24); });
     });
   }
-  show('title', true);
+  show('title', true); placeParade();
 }
 
 /* ---------------- store: ads + purchase ---------------- */
