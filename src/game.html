@@ -590,8 +590,6 @@ const Voice = {
     if (ks.every(k => Snd.hasClip(k))){ this.stopTTS(); Snd.duck(.35); Snd.playClips(ks, () => Snd.duck(1)); return; }
     this.tts(text);
   },
-  // short reaction that never talks over the question
-  react(key){ if (!save.voice || Snd.speaking()) return; const k = this.dir() + key + '.mp3'; if (Snd.hasClip(k)) Snd.playClips([k]); },
   tts(text){
     const B = window.SameOSaurusBridge;
     if (B && typeof B.speak === 'function'){ try { B.speak(text, speechLang()); } catch(e){} return; }
@@ -774,7 +772,7 @@ function giveHint(){
 }
 function speakPrompt(force){
   const R = G.round; if (!R) return; const [a, b] = sentenceParts(R.attr);
-  Voice.say(['q_' + R.attr, R.hk], `Match all the dinosaurs ${a} ${b}. ${R.hint}`, force);
+  Voice.say(['q_' + R.attr], `Match all the dinosaurs ${a} ${b}.`, force);
 }
 async function startRound(){
   const token = ++G.token; G.busy = true; clearTimeout(G.idle); Voice.stop();
@@ -809,8 +807,7 @@ async function startRound(){
     $('#splashP').textContent = R.attr === 'hair' ? 'Silly hairstyles!' : 'Super sunglasses!';
     $('#splashImg').src = ASSETS[(R.attr === 'hair' ? HAIR : GLASSES)[R.example[R.attr]].f];
     show('splash', true); Snd.fx('bonus'); FX.burst(innerWidth/2, innerHeight/2, 50);
-    Voice.say(['b_' + R.attr], R.attr === 'hair' ? 'Bonus round! Silly hairstyles!' : 'Bonus round! Super sunglasses!');
-    await wait(2600); if (token !== G.token) return; show('splash', false);
+    await wait(1700); if (token !== G.token) return; show('splash', false);
   }
   Snd.fx('whoosh'); await wait(350 + R.n*60); if (token !== G.token) return;
   G.busy = false; speakPrompt(); resetIdle();
@@ -831,12 +828,11 @@ function tapCell(cell, ev){
     cell.el.classList.remove('hintme','nope'); cell.el.classList.add('found','jump'); cell.wrap.classList.remove('float');
     cell.dino.classList.remove('sil');
     Snd.fx('yes', G.found-1); sparkle(cell);
-    if (G.found < G.round.k && (G.found === 1 || Math.random() < .35)) Voice.react('yes_' + rnd(4));
     const p = $$('#pips .pip')[G.found-1]; if (p) p.classList.add('on');
     setTimeout(() => { cell.el.classList.remove('jump'); if (!startDance(cell.dino)) cell.wrap.classList.add('bop'); }, 480);
     if (G.found >= G.round.k) finishRound();
   } else {
-    G.wrong++; G.streakWrong++; Snd.fx('no'); Voice.react('no_' + rnd(3));
+    G.wrong++; G.streakWrong++; Snd.fx('no');
     cell.el.classList.remove('nope'); void cell.el.offsetWidth; cell.el.classList.add('nope');
     setTimeout(() => cell.el.classList.remove('nope'), 480);
     if (G.streakWrong >= 2){ G.streakWrong = 0; setTimeout(giveHint, 500); }
@@ -853,7 +849,7 @@ async function finishRound(){
 /* ---------------- celebration ---------------- */
 let partyN = 0, vidUrls = [];
 function party(stars, R){
-  const token = G.token, wi = rnd(CHEERS.length), word = CHEERS[wi];
+  const token = G.token, word = pick(CHEERS);
   $('#cheer').innerHTML = [...word].map((ch, i) => `<span style="color:${CHEER_COL[i % CHEER_COL.length]};animation-delay:${i*55}ms,${i*90}ms">${ch}</span>`).join('');
   const uPx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--u')) || 4;
   $('#cheer').style.fontSize = Math.min(12.5*uPx, innerWidth*.9/(word.length*.7)) + 'px';
@@ -877,7 +873,6 @@ function party(stars, R){
   } else v.style.display = 'none';
   Snd.duck(.45); Snd.fx('fanfare'); FX.cannons(); FX.rain(4500);
   setTimeout(() => { if (token === G.token) FX.burst(innerWidth*.5, innerHeight*.3, 70); }, 500);
-  setTimeout(() => { if (token === G.token) Voice.say(['c_' + wi], word.replace(/-/g,' ').toLowerCase().replace('rawr','roar') + ' You found them all!'); }, 1500);
   [...ps.children].forEach((sv, i) => setTimeout(() => {
     if (token !== G.token) return; if (i < stars) sv.classList.add('gold'); sv.classList.add('in');
     if (i < stars){ Snd.fx('star', i); const r = sv.getBoundingClientRect(); FX.burst(r.left + r.width/2, r.top + r.height/2, 26); }

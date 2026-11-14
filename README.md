@@ -12,10 +12,10 @@ with all art, animation, video, music and sound built in. No server or internet 
 
 - No timer and no way to fail. A wrong tap gets a gentle wobble; after two wrong taps, or 9 seconds
   of waiting, one correct dinosaur wiggles as a hint.
-- The question is read aloud by a recorded friendly female voice (tap the speaker to hear it again),
-  with a plain-words hint under it such as "Find the purple ones!". The operative word (colour, size,
-  number of horns...) is enlarged, colour-coded and gently wiggles. The voice also cheers on correct
-  taps, encourages after a wrong one and announces bonus rounds and the celebration.
+- The question ("Match all the dinosaurs that are the same colour") is read aloud by a recorded friendly
+  female voice at the start of each level; tap the speaker to hear it again. That is the only speech in
+  the game. A plain-words hint such as "Find the purple ones!" shows under it as text, and the operative
+  word (colour, size, number of horns...) is enlarged, colour-coded and gently wiggles.
 - Tapped matches dance (sprite-sheet animation), and finishing a level triggers the celebration:
   party video, fanfare, confetti cannons, stars and a cheer. Tapping the party screen fires more confetti.
 - 1 to 3 stars per level (3 for no wrong taps). Progress and stars are saved on the device.
@@ -51,7 +51,7 @@ Things to know before store submission:
 
 ## Voice
 
-56 recorded lines per accent, generated with Kokoro (open-source text-to-speech, Apache-2.0 licence):
+8 recorded lines per accent (one per question type), generated with Kokoro (open-source text-to-speech, Apache-2.0 licence):
 `af_heart` for US devices and `bf_emma` (British) everywhere else, following the same region rule as
 the spelling. The clips are built into the file, so the voice works offline and inside app wrappers.
 If a clip is ever missing the game falls back to the device's own speech engine and prefers a female voice.
