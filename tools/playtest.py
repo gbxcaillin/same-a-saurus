@@ -76,7 +76,7 @@ async def main():
         await pg.tap('#btnNext', force=True); await pg.wait_for_timeout(400)
         print('ad shown when adFree:', await pg.evaluate("$('#ad').classList.contains('on')"))
         # persistence across reload
-        await pg.reload(); await pg.wait_for_selector('#title.on'); print('after reload:', await pg.inner_text('#playLbl'), '| stars', await pg.inner_text('#starCount'))
+        await pg.reload(); await pg.wait_for_selector('#title.on'); await pg.wait_for_function("!$('#app').classList.contains('pullback')"); print('after reload:', await pg.inner_text('#playLbl'), '| stars', await pg.inner_text('#starCount'))
         # rotate mid-round
         await pg.tap('#btnPlay', force=True); await pg.wait_for_function("!G.busy && $('#game').classList.contains('on')")
         await pg.set_viewport_size({'width':844,'height':390}); await pg.wait_for_timeout(500)

@@ -5,10 +5,15 @@ A dinosaur matching puzzle game for ages 3 to 5. A sentence at the top asks the 
 number of horns) and they tap every dinosaur that matches the example. Every fourth level is a
 silly bonus round: matching sunglasses or matching hairstyles.
 
-**Play it:** open `index.html` in any modern browser. It is one self-contained file (about 6 MB)
+**Play it:** open `index.html` in any modern browser. It is one self-contained file (about 6.5 MB)
 with all art, animation, video, music and sound built in. No server or internet needed.
 
 ## How it plays
+
+- An opening video plays when the game loads: a lonely T-Rex finds its matching twin and the matching
+  pairs pile in for a dance. The logo appears over the ending, then the camera dives into the leaves
+  and pulls back out onto the title page. It can be skipped, and the camera button on the title page
+  replays it. The video starts silent (browsers require a tap before sound); the first tap starts the music.
 
 - No timer and no way to fail. A wrong tap gets a gentle wobble; after two wrong taps, or 9 seconds
   of waiting, one correct dinosaur wiggles as a hint.
@@ -66,7 +71,7 @@ All art, sprite animation and video was generated with OpenArt:
 | 8 dinosaur species, accessories, background, logo, icon, party scenes | Seedream 5.5 (transparent PNG) |
 | 64 accessory sprites (every species redrawn wearing each of the 4 wigs and 4 sunglasses, so they fit the head) | Seedream 5.5 image-to-image |
 | 8 dance loops (cut into sprite strips) | PixVerse V6 image-to-video on a magenta key colour |
-| 2 celebration clips | Kling 3 Omni image-to-video |
+| 2 celebration clips and the 10 second opening video (3 shots, started from a frame built from the game's own art) | Kling 3 Omni image-to-video |
 
 Each species is drawn once in green; the game recolours it at run time (red, orange, yellow,
 green, blue, purple), so colours are always exact. Number of legs and horns were checked by eye
